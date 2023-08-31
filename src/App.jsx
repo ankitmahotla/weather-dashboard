@@ -3,7 +3,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { ProgressBar } from "react-bootstrap";
+
+import Weather from "./components/Weather";
+import SearchInput from "./components/SearchInput";
 const MAX_API_LIMIT = 30;
 
 function App() {
@@ -77,67 +79,15 @@ function App() {
 
   return (
     <div className="app">
-      <div className="search">
-        <input
-          value={location}
-          onChange={(event) => setLocation(event.target.value)}
-          onKeyUp={(event) => {
-            if (event.key === "Enter") {
-              searchLocation();
-            }
-          }}
-          placeholder={
-            apiCounter >= MAX_API_LIMIT
-              ? "API Limit Exceeded"
-              : "Enter Location"
-          }
-          type="text"
-          disabled={apiCounter >= MAX_API_LIMIT}
-        />
-        {/* <button onClick={searchLocation} disabled={apiCounter >= MAX_API_LIMIT}>
-          Search
-        </button> */}
-        <ProgressBar
-          variant="info"
-          now={(apiCounter / MAX_API_LIMIT) * 100}
-          label={`${apiCounter}/${MAX_API_LIMIT} Searches`}
-        />
-      </div>
+      <SearchInput
+        location={location}
+        setLocation={setLocation}
+        searchLocation={searchLocation}
+        apiCounter={apiCounter}
+        MAX_API_LIMIT={MAX_API_LIMIT}
+      />
       <ToastContainer />
-      <div className="container ">
-        <div className="top">
-          <div className="location">
-            <p>{data.name}</p>
-          </div>
-          <div className="temp">
-            {data.main ? <h1>{data.main.temp.toFixed() - 273}°C</h1> : null}
-          </div>
-          <div className="description">
-            {data.weather ? <p>{data.weather[0].main}</p> : null}
-          </div>
-        </div>
-
-        {data.name !== undefined && (
-          <div className="bottom">
-            <div className="feels">
-              {data.main ? (
-                <p className="bold">{data.main.feels_like.toFixed() - 273}°C</p>
-              ) : null}
-              <p>Feels Like</p>
-            </div>
-            <div className="humidity">
-              {data.main ? <p className="bold">{data.main.humidity}%</p> : null}
-              <p>Humidity</p>
-            </div>
-            <div className="wind">
-              {data.wind ? (
-                <p className="bold">{data.wind.speed.toFixed()} MPH</p>
-              ) : null}
-              <p>Wind Speed</p>
-            </div>
-          </div>
-        )}
-      </div>
+      <Weather data={data} />
     </div>
   );
 }
