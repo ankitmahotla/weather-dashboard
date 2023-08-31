@@ -100,11 +100,11 @@ function App() {
         <ProgressBar
           variant="info"
           now={(apiCounter / MAX_API_LIMIT) * 100}
-          label={`${apiCounter}/${MAX_API_LIMIT} searches`}
+          label={`${apiCounter}/${MAX_API_LIMIT} Searches`}
         />
       </div>
       <ToastContainer />
-      <div className="container">
+      <div className="container ">
         <div className="top">
           <div className="location">
             <p>{data.name}</p>
