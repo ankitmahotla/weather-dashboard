@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 
 import Weather from "./components/Weather";
 import SearchInput from "./components/SearchInput";
+import { Button } from "react-bootstrap";
 const MAX_API_LIMIT = 30;
 
 function App() {
@@ -38,7 +39,7 @@ function App() {
         })
         .catch((error) => {
           if (error.response && error.response.status === 404) {
-            toast.error("City not found", {
+            toast.error("Location not found", {
               position: toast.POSITION.TOP_CENTER,
             });
           }
@@ -87,6 +88,13 @@ function App() {
         MAX_API_LIMIT={MAX_API_LIMIT}
       />
       <ToastContainer />
+      {apiCounter >= MAX_API_LIMIT && (
+        <div
+          style={{ display: "flex", justifyContent: "center", marginTop: 100 }}
+        >
+          API Limit Exceeded. Upgrade for more.
+        </div>
+      )}
       <Weather data={data} />
     </div>
   );
