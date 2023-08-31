@@ -1,18 +1,47 @@
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 import axios from "axios";
 import { useState, useEffect } from "react";
+import { ProgressBar } from "react-bootstrap";
+const MAX_API_LIMIT = 30;
 
 function App() {
   const [data, setData] = useState({});
   const [location, setLocation] = useState("");
   const [initialLocationObtained, setInitialLocationObtained] = useState(false);
+  const initialApiCounter =
+    parseInt(localStorage.getItem("apiCounter"), 10) || 0;
+  const [apiCounter, setApiCounter] = useState(initialApiCounter);
+
   const apiKey = import.meta.env.VITE_API_KEY;
   const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${apiKey}`;
 
   const searchLocation = () => {
     if (location !== "") {
-      axios.get(weatherUrl).then((response) => {
-        setData(response.data);
-      });
+      if (apiCounter >= MAX_API_LIMIT) {
+        toast.error("API Limit exceeded", {
+          position: toast.POSITION.TOP_CENTER,
+        });
+        return;
+      }
+
+      axios
+        .get(weatherUrl)
+        .then((response) => {
+          setData(response.data);
+          const updatedCounter = apiCounter + 1;
+          setApiCounter(updatedCounter);
+          localStorage.setItem("apiCounter", updatedCounter); // Update local storage
+        })
+        .catch((error) => {
+          if (error.response && error.response.status === 404) {
+            toast.error("City not found", {
+              position: toast.POSITION.TOP_CENTER,
+            });
+          }
+        });
+
       setLocation("");
     }
   };
@@ -57,10 +86,24 @@ function App() {
               searchLocation();
             }
           }}
-          placeholder="Enter Location"
+          placeholder={
+            apiCounter >= MAX_API_LIMIT
+              ? "API Limit Exceeded"
+              : "Enter Location"
+          }
           type="text"
+          disabled={apiCounter >= MAX_API_LIMIT}
+        />
+        {/* <button onClick={searchLocation} disabled={apiCounter >= MAX_API_LIMIT}>
+          Search
+        </button> */}
+        <ProgressBar
+          variant="info"
+          now={(apiCounter / MAX_API_LIMIT) * 100}
+          label={`${apiCounter}/${MAX_API_LIMIT} searches`}
         />
       </div>
+      <ToastContainer />
       <div className="container">
         <div className="top">
           <div className="location">
