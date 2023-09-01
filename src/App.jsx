@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 
 import Weather from "./components/Weather";
 import SearchInput from "./components/SearchInput";
-import { Button } from "react-bootstrap";
 const MAX_API_LIMIT = 30;
 
 function App() {
@@ -35,7 +34,8 @@ function App() {
           setData(response.data);
           const updatedCounter = apiCounter + 1;
           setApiCounter(updatedCounter);
-          localStorage.setItem("apiCounter", updatedCounter); // Update local storage
+          localStorage.setItem("apiCounter", updatedCounter);
+          localStorage.setItem("weatherData", JSON.stringify(response.data));
         })
         .catch((error) => {
           if (error.response && error.response.status === 404) {
@@ -50,24 +50,35 @@ function App() {
   };
 
   useEffect(() => {
-    if ("geolocation" in navigator && !initialLocationObtained) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          const city = await getCityFromCoordinates(latitude, longitude);
-          setLocation(city);
-          setInitialLocationObtained(true);
-        },
-        (error) => {
-          console.error("Error getting location:", error.message);
-        }
-      );
-    } else if (initialLocationObtained) {
-      searchLocation();
+    const storedLocation = localStorage.getItem("initialLocation");
+    if (storedLocation) {
+      setLocation(storedLocation);
+      setInitialLocationObtained(true);
+      const storedWeatherData = localStorage.getItem("weatherData");
+      if (storedWeatherData) {
+        setData(JSON.parse(storedWeatherData));
+      }
+      setLocation("");
     } else {
-      console.log("Geolocation is not available in this browser.");
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            const city = await getCityFromCoordinates(latitude, longitude);
+            setLocation(city);
+            localStorage.setItem("initialLocation", city);
+            setInitialLocationObtained(true);
+            searchLocation(); // Fetch weather data after obtaining initial location
+          },
+          (error) => {
+            console.error("Error getting location:", error.message);
+          }
+        );
+      } else {
+        console.log("Geolocation is not available in this browser.");
+      }
     }
-  }, [initialLocationObtained]);
+  }, []);
 
   const getCityFromCoordinates = async (latitude, longitude) => {
     const response = await fetch(
